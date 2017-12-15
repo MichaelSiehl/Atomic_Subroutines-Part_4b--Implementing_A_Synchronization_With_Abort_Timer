@@ -1,0 +1,2 @@
+# Atomic_Subroutines-Part_4b--Implementing_A_Synchronization_With_Abort_Timer
+Fortran 2008 coarray programming with unordered execution segments (user-defined ordering) and customized synchronization procedures - Atomic Subroutines - Part 4b: How to cope with unreliable data transfers at low-level PGAS programming - allow for safe remote data movement among a number of coarray images. Implementing a customized synchronization procedure with local abort timer.

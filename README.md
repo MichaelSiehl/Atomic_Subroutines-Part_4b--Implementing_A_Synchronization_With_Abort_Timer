@@ -11,7 +11,23 @@ The codes in the src folder should be compiled and run with OpenCoarray/GFortran
 
 The Main.f90 contains a simple test case for testing the newly added abort timer functionality of the customized EventWait procedure: The test case does execute a customized EventWait on coarray image 1 and calls to customized EventPost on coarray images 4-6 resp. The customized EventWait on coarray image 1 does try to synchronize with calls to customized EventPost on coarray images 3-6. But, because we do not execute a customized EventPost on coarray image 3, this call of the customized EventWait will never complete successfully as a whole and will complete only partly without coarray image 3. The (optional) reaTimeLimitInSeconds argument of the customized EventWait procedure is set to 1 second. Thus, the customized EventWait will terminate it's execution if the synchronization process is still running after 1 second.<br />
 
-See the following output from running the test case in Main.f90:<br />
+Calling the customized EventWait on coarray image 1 with abort timer enabled after 1 second cpu time (from Main.f90):
+```fortran
+call OOOPimscEventWaitScalar_intImageActivityFlag99_CA (OOOPimscImageStatus_CA_1, intImageActivityFlag, &
+       intNumberOfRemoteImages, intA_RemoteImageNumbers, &
+       intA_RemoteImageAndItsAdditionalAtomicValue = intA_RemoteImageAndItsAdditionalAtomicValue, &
+       intCheckRemoteAbortOfSynchronization = intCheckRemoteAbortOfSynchronization, &
+       logRemoteAbortOfSynchronization = logRemoteAbortOfSynchronization, &
+       intRemoteImageThatDidTheAbort = intRemoteImageThatDidTheAbort, &
+       intNumberOfSuccessfulRemoteSynchronizations = intNumberOfSuccessfulRemoteSynchronizations, &
+       intA_TheSuccessfulImageNumbers = intA_TheSuccessfulImageNumbers, &
+       intNumberOfFailedRemoteSynchronizations = intNumberOfFailedRemoteSynchronizations, &
+       intA_TheFailedImageNumbers = intA_TheFailedImageNumbers, &
+       logActivateCircularSynchronization = .true., &
+       reaTimeLimitInSeconds = 1.0) ! activates the local abort timer for the spin-wait loop
+```
+
+See the following output from running the test case in Main.f90:
 ```fortran
 invovled remote images:                        0           4           5           6
 and the additional atomic values:              0           8          10          12

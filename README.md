@@ -39,3 +39,61 @@ number of failed remote synchronizations:           1
 the failed image numbers:           3           0           0           0
 ```
 Here, the 'remote abort of synchronization status' is TRUE and the 'coarray image that did the abort' is image 1 (which is also the image that did execute the customized EventWait). Thus, the synchronization abort was initiated locally on coarray image 1 through the abort timer of the customized EventWait procedure after 1 second (cpu time).<br />
+
+# Implementing the abort timer with the customized EventWait procedure
+Only few lines of Fortran code were required to implement an abort timer with the exising customized EventWait procedure:
+
+```fortran
+!
+subroutine OOOPimscEventWaitScalar_intImageActivityFlag99_CA (Object_CA, intCheckImageActivityFlag, &
+                  intNumberOfImages, intA_RemoteImageNumbers, logArrayIndexIsThisImage, &
+                  intA_RemoteImageAndItsAdditionalAtomicValue, logExecuteSyncMemory, &
+                  intCheckRemoteAbortOfSynchronization, logRemoteAbortOfSynchronization, intRemoteImageThatDidTheAbort, &
+                  intNumberOfSuccessfulRemoteSynchronizations, intA_TheSuccessfulImageNumbers, &
+                  intNumberOfFailedRemoteSynchronizations, intA_TheFailedImageNumbers, &
+                  logActivateCircularSynchronization, reaTimeLimitInSeconds)
+.
+.
+  ! abort timer for the spin-wait loop:
+  real(OOOGglob_krea) :: reaTime1 = 0
+  real(OOOGglob_krea) :: reaTime2 = 0
+  real(OOOGglob_krea) :: reaTimeShift = 0
+  real(OOOGglob_krea), optional, intent (in) :: reaTimeLimitInSeconds ! time limit for the customized EventWait sync
+  real(OOOGglob_krea) :: reaTimeLimitInSec
+.
+.
+  !****
+  if (present(reaTimeLimitInSeconds)) then
+    reaTimeLimitInSec = reaTimeLimitInSeconds
+    call cpu_time(reaTime1) ! initiate the timer
+!  else ! default:
+!    reaTimeLimitInSec = 10
+!    call cpu_time(reaTime1) ! initiate the timer
+  end if
+  !****
+.
+.
+    !*********
+    ! local abort timer (time limit) for the spin-wait synchronization:
+    if (present(reaTimeLimitInSeconds)) then
+     call cpu_time(reaTime2)
+     reaTimeShift = reaTime2 - reaTime1
+     if (reaTimeShift > reaTimeLimitInSec) then ! the time limit for the spin-wait loop has been exceeded
+       ! do a local EventPost to terminate the spin-wait loop:
+       ! (the abort will then be done in the below code section 'for leaving a fault
+       !  synchronization')
+       call OOOPimscEventPostScalar_intImageActivityFlag99_CA (OOOPimscImageStatus_CA_1, &
+                         intCheckRemoteAbortOfSynchronization, &
+                         intImageNumber = this_image(), logExecuteSyncMemory = .false., &
+                         intAdditionalAtomicValue = this_image())
+     end if
+    end if
+    !
+    !*********
+    ! for leaving a fault synchronization do the following check:
+  
+.
+.
+end subroutine
+```
+See the OOOPimsc_admImageStatus_CA.f90 source code file for the complete code.

@@ -10,3 +10,16 @@ Nevertheless, the remote abort functionality alone may not be sufficient (in cas
 The codes in the src folder should be compiled and run with OpenCoarray/GFortran or with ifort (since version 18 update 1) unsing 6 coarray images.<br />
 
 The Main.f90 contains a simple test case for testing the newly added abort timer functionality of the customized EventWait procedure: The test case does execute a customized EventWait on coarray image 1 and calls to customized EventPost on coarray images 4-6 resp. The customized EventWait on coarray image 1 does try to synchronize with calls to customized EventPost on coarray images 3-6. But, because we do not execute a customized EventPost on coarray image 3, this call of the customized EventWait will never complete successfully as a whole and will complete only partly without coarray image 3. The (optional) reaTimeLimitInSeconds argument of the customized EventWait procedure is set to 1 second. Thus, the customized EventWait will terminate it's execution if the synchronization process is still running after 1 second.<br />
+
+See the following output from running the test case in Main.f90:<br />
+```fortran
+invovled remote images:                        0           4           5           6
+and the additional atomic values:              0           8          10          12
+abort of synchronization (TRUE/FALSE): T
+coarray image that did the abort:           1
+number of successful remote synchronizations:           3
+the successful image numbers:           6           4           5           0
+number of failed remote synchronizations:           1
+the failed image numbers:           3           0           0           0
+```
+Here, the 'remote abort of synchronization status' is TRUE and the 'coarray image that did the abort' is image 1 (which is also the image that did execute the customized EventWait. Thus, the synchronization abort was initiated locally on coarray image 1 through the abort timer of the customized EventWait procedure after 1 second (cpu time).<br />

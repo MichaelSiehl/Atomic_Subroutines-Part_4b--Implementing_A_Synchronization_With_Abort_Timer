@@ -22,4 +22,4 @@ the successful image numbers:           6           4           5           0
 number of failed remote synchronizations:           1
 the failed image numbers:           3           0           0           0
 ```
-Here, the 'remote abort of synchronization status' is TRUE and the 'coarray image that did the abort' is image 1 (which is also the image that did execute the customized EventWait. Thus, the synchronization abort was initiated locally on coarray image 1 through the abort timer of the customized EventWait procedure after 1 second (cpu time).<br />
+Here, the 'remote abort of synchronization status' is TRUE and the 'coarray image that did the abort' is image 1 (which is also the image that did execute the customized EventWait). Thus, the synchronization abort was initiated locally on coarray image 1 through the abort timer of the customized EventWait procedure after 1 second (cpu time).<br />
